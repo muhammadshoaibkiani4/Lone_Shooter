@@ -1,0 +1,96 @@
+body {
+  margin: 0;
+  background: radial-gradient(circle at center, #050505, #000);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+canvas {
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #0ff;
+  box-shadow: 0 0 20px #0ff;
+  display: none;
+}
+
+#menu, #gameOver, #pauseScreen, #achievementsMenu {
+  position: absolute;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #0ff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #0ff;
+}
+
+.title {
+  font-size: 2em;
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff;
+}
+
+button, select, input {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background: #0ff;
+  color: #000;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 0 10px #0ff;
+}
+
+button:hover {
+  background: #08f;
+  box-shadow: 0 0 20px #08f;
+}
+
+.hidden {
+  display: none;
+}
+
+#achievementPopup {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid #0ff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #0ff;
+  font-weight: bold;
+  text-shadow: 0 0 5px #0ff;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+#achievementPopup.show {
+  opacity: 1;
+}
+
+#achievementsMenu ul {
+  list-style: none;
+  padding: 0;
+}
+
+#achievementsMenu li {
+  margin: 5px;
+  padding: 5px;
+  border-bottom: 1px solid #0ff;
+  text-shadow: 0 0 5px #0ff;
+}
+
+#achievementsMenu li.locked {
+  opacity: 0.4;
+}
+
+.highscore-text {
+  color: #0ff;
+  font-size: 1em;
+}
