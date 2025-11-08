@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Top-Down Shooter — v3</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Centered fixed game frame -->
+  <div id="frame">
+    <!-- Overlays (menu, pause, game over) -->
+    <div id="menu" class="overlay">
+      <h1>Top-Down Shooter</h1>
+      <p id="menu-highscore">High Score: 0</p>
+
+      <label for="playerName" style="display:block;margin-bottom:8px;color:rgba(255,255,255,0.9)">
+        Enter name:
+      </label>
+      <input id="playerName" type="text" placeholder="Player" style="width:84%;padding:8px;border-radius:6px;border:0;background:rgba(255,255,255,0.04);color:#fff;margin-bottom:12px" />
+
+      <label for="difficulty" style="display:block;margin-bottom:6px;color:rgba(255,255,255,0.85)">Difficulty:</label>
+      <select id="difficulty" style="width:84%;padding:8px;border-radius:6px;border:0;background:rgba(255,255,255,0.04);color:#fff;margin-bottom:12px">
+        <option value="normal" selected>Normal</option>
+        <option value="easy">Easy</option>
+        <option value="hard">Hard</option>
+      </select>
+
+      <button id="startBtn" class="btn">Start Game</button>
+      <p class="hint">WASD to move · Space to shoot · R to reload · P/Esc to pause</p>
+    </div>
+
+    <div id="pause" class="overlay hidden">
+      <h1>Game Paused</h1>
+      <div style="margin-top:12px">
+        <button id="resumeBtn" class="btn">Resume</button>
+        <button id="pauseHomeBtn" class="btn alt" style="margin-left:8px">Home</button>
+      </div>
+    </div>
+
+    <div id="gameOver" class="overlay hidden">
+      <h1>Game Over</h1>
+      <p id="finalScore">Score: 0</p>
+      <p id="finalHigh">High Score: 0</p>
+      <p id="survivalMsg" style="margin-top:8px;color:rgba(255,255,255,0.9)"></p>
+      <div style="margin-top:12px">
+        <button id="replayBtn" class="btn">Replay</button>
+        <button id="homeBtn" class="btn alt" style="margin-left:8px">Home</button>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <canvas id="gameCanvas" width="900" height="600"></canvas>
+
+    <!-- HUD: top-left and top-right groups -->
+    <div id="hud">
+      <div id="hud-left">
+        <div id="hearts"></div>
+        <div id="ammo" class="panel">Ammo: 50 / 50</div>
+      </div>
+
+      <div id="hud-right">
+        <div id="highscore" class="panel">High Score: 0</div>
+        <div id="timer" class="panel">Time: 0s</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
