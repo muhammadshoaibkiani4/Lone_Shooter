@@ -1,34 +1,32 @@
 // =================== NEON SHOOTER v5 ===================
-// Full fixed version - all features and no missing brackets
+// Fixed full version with achievements, easter eggs & dialogue
 // by M. Shoaib & GPT-5
 
 // ======= Canvas Setup =======
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-
 canvas.width = 800;
 canvas.height = 500;
 
 let gameRunning = false;
 let paused = false;
 
-// ======= Player Setup =======
+// ======= Player =======
 let player = {
-    x: canvas.width - 100,
-    y: canvas.height / 2,
-    size: 20,
-    speed: 5,
-    color: "cyan",
-    bullets: 50,
-    hp: 10,
-    name: "Player",
-    paralyzed: false
+  x: canvas.width - 100,
+  y: canvas.height / 2,
+  size: 20,
+  speed: 5,
+  color: "cyan",
+  bullets: 50,
+  hp: 10,
+  name: "Player",
+  paralyzed: false,
 };
 
-// ======= Game Variables =======
+// ======= Game Vars =======
 let bullets = [];
 let enemies = [];
-let powerUps = [];
 let score = 0;
 let highScore = parseInt(localStorage.getItem("highScore")) || 0;
 let bestTime = parseInt(localStorage.getItem("bestTime")) || 0;
@@ -37,11 +35,11 @@ let achievements = JSON.parse(localStorage.getItem("achievements")) || {};
 let startTime;
 let difficulty = "normal";
 
-// ======= Easter Egg Flags =======
+// ======= Easter Egg =======
 let easterEggMode = null;
 let easterEggTriggered = false;
 
-// ======= HTML Elements =======
+// ======= HTML =======
 const startMenu = document.getElementById("startMenu");
 const startBtn = document.getElementById("startGame");
 const achievementsBtn = document.getElementById("achievementsBtn");
@@ -49,229 +47,309 @@ const resetBtn = document.getElementById("resetBtn");
 const difficultySelect = document.getElementById("difficulty");
 const nameInput = document.getElementById("playerName");
 const achievementsBox = document.getElementById("achievementsBox");
-const closeAchievements = document.getElementById("closeAchievements");
-
-// ======= Sounds (Optional later) =======
-let shootSound = new Audio("shoot.mp3");
-let explosionSound = new Audio("explode.mp3");
 
 // ======= Helper Functions =======
 function resetGame() {
-    player.hp = 10;
-    player.bullets = 50;
-    score = 0;
-    enemies = [];
-    bullets = [];
-    powerUps = [];
-    gameTimer = 0;
-    paused = false;
-    player.paralyzed = false;
-    startTime = Date.now();
+  player.hp = 10;
+  player.bullets = 50;
+  score = 0;
+  enemies = [];
+  bullets = [];
+  gameTimer = 0;
+  paused = false;
+  player.paralyzed = false;
+  startTime = Date.now();
 }
 
 function drawPlayer() {
-    ctx.beginPath();
-    ctx.moveTo(player.x, player.y);
-    ctx.lineTo(player.x - player.size, player.y - player.size / 2);
-    ctx.lineTo(player.x - player.size, player.y + player.size / 2);
-    ctx.closePath();
-    ctx.fillStyle = player.color;
-    ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(player.x, player.y);
+  ctx.lineTo(player.x - player.size, player.y - player.size / 2);
+  ctx.lineTo(player.x - player.size, player.y + player.size / 2);
+  ctx.closePath();
+  ctx.fillStyle = player.color;
+  ctx.fill();
 
-    // Draw name
-    ctx.font = "14px Orbitron";
-    ctx.fillStyle = "cyan";
-    ctx.textAlign = "center";
-    ctx.fillText(player.name, player.x, player.y - 25);
+  ctx.font = "14px Orbitron";
+  ctx.fillStyle = "cyan";
+  ctx.textAlign = "center";
+  ctx.fillText(player.name, player.x, player.y - 25);
 }
 
 function drawHUD() {
-    ctx.font = "16px Orbitron";
-    ctx.textAlign = "left";
-    ctx.fillStyle = "cyan";
-    ctx.fillText(`HP: ${player.hp}/10`, 20, 30);
-    ctx.fillText(`Ammo: ${player.bullets}/50`, 20, 55);
-    ctx.textAlign = "right";
-    ctx.fillText(`Score: ${score}`, canvas.width - 20, 30);
-    ctx.fillText(`Time: ${Math.floor(gameTimer)}s`, canvas.width - 20, 55);
+  ctx.font = "16px Orbitron";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "cyan";
+  ctx.fillText(`HP: ${player.hp}/10`, 20, 30);
+  ctx.fillText(`Ammo: ${player.bullets}/50`, 20, 55);
+  ctx.textAlign = "right";
+  ctx.fillText(`Score: ${score}`, canvas.width - 20, 30);
+  ctx.fillText(`Time: ${Math.floor(gameTimer)}s`, canvas.width - 20, 55);
 }
 
 function spawnEnemy() {
-    let colors = ["green", "yellow", "red"];
-    let color = colors[Math.floor(Math.random() * colors.length)];
-    if (Math.random() < 0.05) color = "black"; // rare black enemy
+  const colors = ["green", "yellow", "red"];
+  let color = colors[Math.floor(Math.random() * colors.length)];
+  if (Math.random() < 0.05) color = "black";
 
-    let speed = color === "green" ? 2 :
-                color === "yellow" ? 3.5 :
-                color === "red" ? 5 : 4;
+  const speed =
+    color === "green" ? 2 :
+    color === "yellow" ? 3.5 :
+    color === "red" ? 5 : 4;
 
-    enemies.push({
-        x: 0,
-        y: Math.random() * (canvas.height - 30) + 15,
-        size: 15,
-        color,
-        speed
-    });
+  enemies.push({
+    x: 0,
+    y: Math.random() * (canvas.height - 30) + 15,
+    size: 15,
+    color,
+    speed,
+  });
 }
 
 function drawEnemies() {
-    enemies.forEach((enemy, i) => {
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
-        ctx.fillStyle = enemy.color;
-        ctx.fill();
-        enemy.x += enemy.speed;
+  enemies.forEach((enemy, i) => {
+    ctx.beginPath();
+    ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+    ctx.fillStyle = enemy.color;
+    ctx.fill();
+    enemy.x += enemy.speed;
 
-        // Collision check
-        if (enemy.x > canvas.width - 50) {
-            if (enemy.color === "black") {
-                player.paralyzed = true;
-                setTimeout(() => (player.paralyzed = false), 5000);
-            } else {
-                player.hp--;
-            }
-            enemies.splice(i, 1);
-        }
-    });
+    if (enemy.x > canvas.width - 50) {
+      if (enemy.color === "black") {
+        player.paralyzed = true;
+        showAchievement("yeah that black thing ain't normal");
+        setTimeout(() => (player.paralyzed = false), 5000);
+      } else {
+        player.hp--;
+      }
+      enemies.splice(i, 1);
+    }
+  });
 }
 
 function drawBullets() {
-    bullets.forEach((b, i) => {
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = "aqua";
-        ctx.fill();
-        b.x -= 8;
-        if (b.x < 0) bullets.splice(i, 1);
-    });
+  bullets.forEach((b, i) => {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "aqua";
+    ctx.fill();
+    b.x -= 8;
+    if (b.x < 0) bullets.splice(i, 1);
+  });
 }
 
 function checkCollisions() {
-    enemies.forEach((enemy, ei) => {
-        bullets.forEach((bullet, bi) => {
-            const dist = Math.hypot(enemy.x - bullet.x, enemy.y - bullet.y);
-            if (dist < enemy.size + 4) {
-                bullets.splice(bi, 1);
-                enemies.splice(ei, 1);
-                score += 10;
-            }
-        });
+  enemies.forEach((enemy, ei) => {
+    bullets.forEach((bullet, bi) => {
+      const dist = Math.hypot(enemy.x - bullet.x, enemy.y - bullet.y);
+      if (dist < enemy.size + 4) {
+        bullets.splice(bi, 1);
+        enemies.splice(ei, 1);
+        score += 10;
+        if (enemy.color === "black") showAchievement("You killed that thing?");
+      }
     });
+  });
 }
 
 function showAchievement(text) {
-    if (achievements[text]) return; // already unlocked
-    achievements[text] = true;
-    localStorage.setItem("achievements", JSON.stringify(achievements));
+  if (achievements[text]) return;
+  achievements[text] = true;
+  localStorage.setItem("achievements", JSON.stringify(achievements));
 
-    const div = document.createElement("div");
-    div.className = "achievement";
-    div.textContent = `🏆 ${text}`;
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 3000);
+  const div = document.createElement("div");
+  div.className = "achievement-popup show";
+  div.textContent = `🏆 ${text}`;
+  document.body.appendChild(div);
+  setTimeout(() => {
+    div.classList.remove("show");
+    setTimeout(() => div.remove(), 500);
+  }, 3000);
+}
+
+function youWin() {
+  gameRunning = false;
+  ctx.fillStyle = "rgba(0,0,0,0.8)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#00ff00";
+  ctx.font = "32px Orbitron";
+  ctx.textAlign = "center";
+  ctx.fillText("✅ YOU WIN!", canvas.width / 2, canvas.height / 2);
+  showAchievement("So that's how it feels to be the enemy");
 }
 
 function gameOver() {
-    gameRunning = false;
-    const survived = Math.floor(gameTimer);
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem("highScore", highScore);
-    }
-    if (survived > bestTime) {
-        bestTime = survived;
-        localStorage.setItem("bestTime", bestTime);
-    }
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#00bfff";
-    ctx.font = "32px Orbitron";
-    ctx.textAlign = "center";
-    ctx.fillText(`💀 Game Over 💀`, canvas.width / 2, canvas.height / 2 - 40);
-    ctx.fillText(`You survived for ${survived}s`, canvas.width / 2, canvas.height / 2);
-    ctx.fillText(`Score: ${score} | High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 40);
-    ctx.fillText(`Press Enter to replay or Esc for menu`, canvas.width / 2, canvas.height / 2 + 80);
+  gameRunning = false;
+  const survived = Math.floor(gameTimer);
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem("highScore", highScore);
+  }
+  if (survived > bestTime) {
+    bestTime = survived;
+    localStorage.setItem("bestTime", bestTime);
+  }
+  ctx.fillStyle = "rgba(0,0,0,0.8)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#00bfff";
+  ctx.font = "32px Orbitron";
+  ctx.textAlign = "center";
+  ctx.fillText("💀 Game Over 💀", canvas.width / 2, canvas.height / 2 - 40);
+  ctx.fillText(`You survived ${survived}s`, canvas.width / 2, canvas.height / 2);
+  ctx.fillText(`Score: ${score} | High: ${highScore}`, canvas.width / 2, canvas.height / 2 + 40);
 }
 
 function updateGame() {
-    if (!gameRunning || paused) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const elapsed = (Date.now() - startTime) / 1000;
-    gameTimer = elapsed;
-
-    drawPlayer();
-    drawBullets();
-    drawEnemies();
-    drawHUD();
-    checkCollisions();
-
-    if (Math.random() < 0.02) spawnEnemy();
-
-    if (player.hp <= 0) {
-        showAchievement("First time?");
-        gameOver();
-        return;
-    }
-
-    requestAnimationFrame(updateGame);
+  if (!gameRunning || paused) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  gameTimer = (Date.now() - startTime) / 1000;
+  drawPlayer();
+  drawBullets();
+  drawEnemies();
+  drawHUD();
+  checkCollisions();
+  if (Math.random() < 0.02) spawnEnemy();
+  if (player.hp <= 0) {
+    showAchievement("First time?");
+    gameOver();
+    return;
+  }
+  requestAnimationFrame(updateGame);
 }
+
+// ======= Easter Egg Activation =======
+nameInput.addEventListener("change", () => {
+  const val = nameInput.value.toLowerCase();
+  if (["red", "green", "yellow", "black"].includes(val)) easterEggMode = val;
+  if (val === "big") easterEggMode = "big";
+  if (val === "small") easterEggMode = "small";
+  if (val === "invisible") easterEggMode = "invisible";
+});
 
 // ======= Controls =======
 document.addEventListener("keydown", (e) => {
-    if (player.paralyzed || paused || !gameRunning) return;
+  if (!gameRunning) {
+    if (e.key === "Enter") startGame();
+    return;
+  }
+  if (paused) return;
 
-    if (e.key === "w" && player.y > 20) player.y -= player.speed;
-    if (e.key === "s" && player.y < canvas.height - 20) player.y += player.speed;
-    if (e.key === "a" && player.x > 20) player.x -= player.speed;
-    if (e.key === "d" && player.x < canvas.width - 20) player.x += player.speed;
+  if (player.paralyzed) return;
 
-    if (e.key === " ") {
-        if (player.bullets > 0) {
-            bullets.push({ x: player.x - player.size, y: player.y });
-            player.bullets--;
-        } else showAchievement("Now keep checking your ammo");
-    }
+  if (e.key === "w") player.y -= player.speed;
+  if (e.key === "s") player.y += player.speed;
+  if (e.key === "a") player.x -= player.speed;
+  if (e.key === "d") player.x += player.speed;
 
-    if (e.key === "r") {
-        player.bullets = 50;
-        showAchievement("There's a reload in this game?");
-    }
+  if (e.key === " ") {
+    if (player.bullets > 0) {
+      bullets.push({ x: player.x - player.size, y: player.y });
+      player.bullets--;
+    } else showAchievement("Now keep checking your ammo");
+  }
 
-    if (e.key === "Escape") paused = !paused;
-    if (!gameRunning && e.key === "Enter") startGame();
+  if (e.key === "r") {
+    player.bullets = 50;
+    showAchievement("There's a reload in this game?");
+  }
+
+  if (e.key === "Escape") paused = !paused;
 });
 
-// ======= Menu and Game Start =======
+// ======= Game Start + Dialogue =======
 function startGame() {
-    player.name = nameInput.value || "Player";
-    difficulty = difficultySelect.value;
-    resetGame();
-    startMenu.style.display = "none";
-    gameRunning = true;
-    startTime = Date.now();
-    updateGame();
+  player.name = nameInput.value || "Player";
+  difficulty = difficultySelect.value;
+  resetGame();
+
+  // Easter egg effects
+  if (easterEggMode) {
+    if (["red", "green", "yellow", "black"].includes(easterEggMode)) {
+      player.color = easterEggMode;
+      showAchievement("So that's how it feels to be the enemy");
+    }
+    if (easterEggMode === "big") {
+      player.size = 40;
+      showAchievement("now that's a Big Boi");
+    }
+    if (easterEggMode === "small") {
+      player.size = 10;
+      showAchievement("now that's a small boi");
+    }
+    if (easterEggMode === "invisible") {
+      player.color = "rgba(0,255,255,0.1)";
+      showAchievement("now you see me now you don't");
+    }
+  }
+
+  startMenu.style.display = "none";
+  gameRunning = true;
+  startTime = Date.now();
+
+  // Intro dialogue (only once)
+  if (!localStorage.getItem("introShown")) {
+    showDialogue([
+      `[Unknown] Hey, wake up ${player.name}!`,
+      `${player.name}: Where am I?`,
+      `[Unknown] I don’t know that either... just keep shooting and survive.`,
+      `${player.name}: Hey, wait—`,
+    ]);
+    localStorage.setItem("introShown", "true");
+  }
+
+  updateGame();
+}
+
+// ======= Dialogue =======
+function showDialogue(lines) {
+  const box = document.createElement("div");
+  box.className = "dialogue";
+  const text = document.createElement("div");
+  text.className = "dialogue-text";
+  box.appendChild(text);
+  document.body.appendChild(box);
+
+  let index = 0;
+  function nextLine() {
+    if (index >= lines.length) {
+      box.remove();
+      return;
+    }
+    let i = 0;
+    text.textContent = "";
+    const line = lines[index];
+    const interval = setInterval(() => {
+      text.textContent += line[i];
+      i++;
+      if (i >= line.length) {
+        clearInterval(interval);
+        index++;
+        setTimeout(nextLine, 1000);
+      }
+    }, 40);
+  }
+  nextLine();
 }
 
 // ======= Reset Button =======
 resetBtn.addEventListener("click", () => {
-    localStorage.clear();
-    achievements = {};
-    highScore = 0;
-    bestTime = 0;
-    alert("All progress reset!");
-    location.reload();
+  localStorage.clear();
+  achievements = {};
+  highScore = 0;
+  bestTime = 0;
+  alert("All progress reset!");
+  location.reload();
 });
 
-// ======= Achievements Modal =======
+// ======= Achievements =======
 achievementsBtn.addEventListener("click", () => {
-    achievementsBox.style.display = "block";
-    achievementsBox.innerHTML = "<h2>Achievements</h2>";
-    for (let key in achievements) {
-        achievementsBox.innerHTML += `<p>🏆 ${key}</p>`;
-    }
-    achievementsBox.innerHTML += `<button id='closeAchievements'>Close</button>`;
-    document.getElementById("closeAchievements").onclick = () => (achievementsBox.style.display = "none");
+  achievementsBox.style.display = "block";
+  achievementsBox.innerHTML = "<h2>Achievements</h2>";
+  for (let key in achievements) {
+    achievementsBox.innerHTML += `<p>🏆 ${key}</p>`;
+  }
+  achievementsBox.innerHTML += `<button id='closeAchievements'>Close</button>`;
+  document.getElementById("closeAchievements").onclick = () => (achievementsBox.style.display = "none");
 });
 
 // ======= Start Button =======
