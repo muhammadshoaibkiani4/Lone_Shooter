@@ -1,101 +1,163 @@
-/* script.js - Neon Shooter v5
-   Full gameplay, achievements, easter eggs, story intro, reset system.
-   Plain JavaScript. Save as script.js beside index.html & style.css
-*/
+/* === GLOBAL === */
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at center, #040404, #000);
+  color: #0ff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
 
-(() => {
-  /* ----------------- DOM IDs / Keys ----------------- */
-  const CANVAS_ID = 'gameCanvas';
-  const MENU_ID = 'menu';
-  const START_BTN_ID = 'startButton';
-  const ACH_BTN_ID = 'achievementsButton';
-  const RESET_BTN_ID = 'resetButton';
-  const MENU_HS_ID = 'menuHighScore';
-  const MENU_BT_ID = 'menuBestTime';
-  const NAME_INPUT_ID = 'playerName';
-  const DIFF_ID = 'difficulty';
+/* === CANVAS FRAME === */
+#frame {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 900px;
+  height: 600px;
+}
+canvas {
+  display: none;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #0ff;
+  box-shadow: 0 0 20px #0ff;
+  border-radius: 10px;
+}
 
-  const ACH_MENU_ID = 'achievementsMenu';
-  const ACH_LIST_ID = 'achievementsList';
-  const BACK_BTN_ID = 'backToMenu';
+/* === OVERLAYS === */
+.overlay {
+  position: absolute;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #0ff;
+  padding: 20px 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 25px #0ff;
+}
+.hidden { display: none; }
 
-  const GAMEOVER_ID = 'gameOver';
-  const SURVIVAL_ID = 'survivalTime';
-  const FINAL_SCORE_ID = 'finalScore';
-  const HIGH_DISPLAY_ID = 'highScoreDisplay';
-  const REPLAY_ID = 'replayButton';
-  const HOME_ID = 'homeButton';
+.title {
+  font-size: 2.4em;
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff;
+  margin-bottom: 10px;
+}
+.label {
+  display: block;
+  margin-top: 10px;
+  color: #0ff;
+  font-weight: bold;
+}
+.meta {
+  color: #0ff;
+  text-shadow: 0 0 6px #0ff;
+  font-size: 1em;
+}
+.hint {
+  color: #088;
+  font-size: 0.9em;
+  margin-top: 6px;
+}
+.btn {
+  margin: 5px;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 5px;
+  background: #0ff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 15px #0ff;
+  transition: 0.2s;
+}
+.btn:hover { background: #09f; box-shadow: 0 0 25px #09f; }
+.btn.alt { background: #08f; color: #fff; }
+.btn.alt:hover { background: #0af; }
 
-  const YOUWIN_ID = 'youWin';
-  const YOUWIN_MSG = 'youWinMsg';
-  const YOUWIN_SCORE = 'youWinScore';
-  const WIN_REPLAY = 'winReplay';
-  const WIN_HOME = 'winHome';
+select, input {
+  margin-top: 5px;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #0ff;
+  background: #000;
+  color: #0ff;
+  text-align: center;
+  box-shadow: 0 0 10px #0ff inset;
+}
 
-  const PAUSE_ID = 'pauseScreen';
-  const RESUME_ID = 'resumeButton';
-  const PAUSE_HOME_ID = 'pauseHomeButton';
+/* === ACHIEVEMENTS === */
+.ach-list { color: #0ff; }
+.ach-list .locked { opacity: 0.4; }
+.achievement-popup {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,255,255,0.1);
+  border: 1px solid #0ff;
+  padding: 8px 18px;
+  border-radius: 8px;
+  color: #0ff;
+  font-weight: bold;
+  text-shadow: 0 0 6px #0ff;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.achievement-popup.show { opacity: 1; }
 
-  const DIALOGUE_BOX_ID = 'dialogueBox';
-  const DIALOGUE_TEXT_ID = 'dialogueText';
-  const DIALOGUE_HINT_ID = 'dialogueHint';
+/* === DIALOGUE BOX === */
+.dialogue {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  background: rgba(0, 10, 20, 0.85);
+  border: 2px solid #0ff;
+  border-radius: 8px;
+  box-shadow: 0 0 25px #0ff;
+  padding: 15px;
+  color: #0ff;
+  text-shadow: 0 0 6px #0ff;
+}
+.dialogue-text {
+  font-size: 1.1em;
+  line-height: 1.4em;
+  min-height: 50px;
+  text-align: left;
+}
+.dialogue-hint {
+  font-size: 0.9em;
+  color: #08f;
+  text-align: right;
+  margin-top: 8px;
+}
 
-  const ACH_POPUP_ID = 'achievementPopup';
+/* === GAME OVER (Blue) === */
+#gameOver {
+  border-color: #09f;
+  box-shadow: 0 0 25px #09f;
+  color: #09f;
+}
 
-  const LS_HIGH = 'ns_highscore_v1';
-  const LS_ACH = 'ns_achievements_v1';
-  const LS_STATS = 'ns_stats_v1';
-  const LS_BESTTIME = 'ns_besttime_v1';
-  const LS_INTRO = 'ns_intro_shown_v1';
+/* === YOU WIN (Green) === */
+#youWin {
+  border-color: #0f0;
+  box-shadow: 0 0 25px #0f0;
+  color: #0f0;
+}
+#youWin h2 {
+  text-shadow: 0 0 12px #0f0;
+}
 
-  /* ----------------- DOM helpers ----------------- */
-  const $ = id => document.getElementById(id);
-  function mk(tag, props = {}) { const e = document.createElement(tag); Object.assign(e, props); return e; }
-
-  /* ----------------- cached nodes ----------------- */
-  const canvas = $(CANVAS_ID);
-  const ctx = canvas.getContext('2d');
-
-  const menu = $(MENU_ID);
-  const startBtn = $(START_BTN_ID);
-  const achBtn = $(ACH_BTN_ID);
-  const resetBtn = $(RESET_BTN_ID);
-  const menuHighScore = $(MENU_HS_ID);
-  const menuBestTime = $(MENU_BT_ID);
-  const nameInput = $(NAME_INPUT_ID);
-  const diffSelect = $(DIFF_ID);
-
-  const achMenu = $(ACH_MENU_ID);
-  const achList = $(ACH_LIST_ID);
-  const backBtn = $(BACK_BTN_ID);
-
-  const gameOver = $(GAMEOVER_ID);
-  const survivalEl = $(SURVIVAL_ID);
-  const finalScoreEl = $(FINAL_SCORE_ID);
-  const highDisplay = $(HIGH_DISPLAY_ID);
-  const replayBtn = $(REPLAY_ID);
-  const homeBtn = $(HOME_ID);
-
-  const youWin = $(YOUWIN_ID);
-  const youWinMsg = $(YOUWIN_MSG);
-  const youWinScore = $(YOUWIN_SCORE);
-  const winReplay = $(WIN_REPLAY);
-  const winHome = $(WIN_HOME);
-
-  const pauseScreen = $(PAUSE_ID);
-  const resumeBtn = $(RESUME_ID);
-  const pauseHomeBtn = $(PAUSE_HOME_ID);
-
-  const dialogueBox = $(DIALOGUE_BOX_ID);
-  const dialogueText = $(DIALOGUE_TEXT_ID);
-  const dialogueHint = $(DIALOGUE_HINT_ID);
-
-  const achPopup = $(ACH_POPUP_ID);
-
-  // safe ensures
-  function ensure(el, id) { if (!el) { const n = mk('div'); n.id = id; document.body.appendChild(n); return n; } return el; }
-  ensure(canvas, CANVAS_ID);
-  ensure(menu, MENU_ID);
-  ensure(startBtn, START_BTN_ID);
-  ensure(achBtn, ACH_BTN_ID);
-  ensure(resetBtn, RESET_BTN_ID);
+/* === PAUSE SCREEN === */
+#pauseScreen {
+  border-color: #0ff;
+  box-shadow: 0 0 25px #0ff;
+  color: #0ff;
+}
